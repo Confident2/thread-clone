@@ -10,7 +10,6 @@ interface Result {
   image: string;
   id: string;
   threads: {
-    likedBy: string[];
     _id: string;
     text: string;
     parentId: string | null;
@@ -76,7 +75,6 @@ async function ThreadsTab({ currentUserId, accountId, accountType }: Props) {
               : thread.community
           }
           createdAt={thread.createdAt}
-          threadLike={thread.likedBy}
           comments={thread.children}
         />
       ))}

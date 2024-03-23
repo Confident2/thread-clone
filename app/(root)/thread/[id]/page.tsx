@@ -27,7 +27,7 @@ async function page({ params }: { params: { id: string } }) {
     <section className="relative">
       <div>
         <ThreadCard
-          id={thread._id.toString()}
+          id={JSON.stringify(thread._id)}
           currentUserId={user.id}
           parentId={thread.parentId}
           content={thread.text}

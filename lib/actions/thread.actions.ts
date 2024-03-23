@@ -247,30 +247,42 @@ export async function toggleThreadLike(
   userId: string,
   path: string
 ) {
-  connectToDB();
-
   try {
-    const thread = await Thread.findByIdAndUpdate(
-      threadId,
-      {
-        // Use $addToSet to add userId to likedBy if it doesn't exist
-        // Use $pull to remove userId from likedBy if it exists
-        $addToSet: { likedBy: userId },
-        $pull: { likedBy: userId },
-        // Use $inc to increment or decrement threadLike based on whether userId is being added or removed
-        $inc: { threadLike: 1 },
-      },
-      { new: true } // Return the updated document
+    // Check if the user has already liked the thread
+    const likedThread = await Thread.findById(threadId).populate(
+      "likedBy",
+      "_id"
     );
 
-    if (!thread) {
+    if (!likedThread) {
       throw new Error("Thread not found");
     }
 
+    const userLiked = likedThread.likedBy.some(
+      (likedUser: any) => likedUser._id.toString() === userId
+    );
+
+    if (userLiked) {
+      // If the user has already liked the thread, unlike it
+      await Thread.updateOne(
+        { _id: threadId },
+        { $pull: { likedBy: userId }, $inc: { threadLike: -1 } }
+      );
+    } else {
+      // If the user has not liked the thread, like it
+      await Thread.updateOne(
+        { _id: threadId },
+        { $addToSet: { likedBy: userId }, $inc: { threadLike: 1 } },
+        { upsert: true }
+      );
+    }
+
     console.log("Thread like toggled successfully");
-    revalidatePath(path);
-  } catch (error: any) {
+    // Revalidate path after updating the thread
+    revalidatePath(path); // Assuming revalidatePath is defined elsewhere
+  } catch (error) {
     console.error("Error toggling thread like:", error);
+    // Throw specific error for failure to toggle thread like
     throw new Error("Failed to toggle thread like");
   }
 }
