@@ -214,3 +214,5 @@ module.exports = {
   },
   plugins: [require("tailwindcss-animate")],
 };
+
+// mongodb url password: iJsi46CGhz02amYx

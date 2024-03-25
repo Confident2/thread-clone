@@ -36,7 +36,7 @@ async function Home({
             {result.posts.map((post) => (
               <ThreadCard
                 key={post._id}
-                id={JSON.stringify(post._id)}
+                id={post._id}
                 currentUserId={user.id}
                 parentId={post.parentId}
                 content={post.text}

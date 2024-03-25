@@ -7,11 +7,12 @@ import { usePathname } from "next/navigation";
 interface Props {
   threadId: string;
   currentUserId: string;
+  path: string;
 }
 
-const LikeButton: React.FC<Props> = ({ threadId, currentUserId }) => {
+const LikeButton: React.FC<Props> = ({ threadId, currentUserId, path }) => {
   const [liked, setLiked] = useState(false);
-  const path = usePathname();
+  const pathname = usePathname();
 
   const handleLikeClick = async () => {
     try {
@@ -19,7 +20,7 @@ const LikeButton: React.FC<Props> = ({ threadId, currentUserId }) => {
       setLiked((prevLiked) => !prevLiked);
 
       // Call the toggleThreadLike function with the updated liked state
-      // await toggleThreadLike(threadId, currentUserId, path);
+      await toggleThreadLike(threadId, currentUserId, pathname);
     } catch (error) {
       console.error("Error toggling thread like:", error);
     }

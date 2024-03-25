@@ -80,6 +80,7 @@ function ThreadCard({
                 <LikeButton
                   threadId={JSON.stringify(id)}
                   currentUserId={currentUserId}
+                  path="/"
                 />
 
                 {/* <span className="text-subtle-medium text-gray-1">{likes}</span> */}

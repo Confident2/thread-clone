@@ -6,6 +6,7 @@ import { connectToDB } from "../mongoose";
 import User from "../models/user.model";
 import Thread from "../models/thread.model";
 import Community from "../models/community.model";
+import { Types } from "mongoose";
 
 export async function fetchPosts(pageNumber = 1, pageSize = 20) {
   connectToDB();
@@ -244,45 +245,49 @@ export async function addCommentToThread(
 
 export async function toggleThreadLike(
   threadId: string,
-  userId: string,
+  currentUserId: string,
   path: string
-) {
+): Promise<void> {
   try {
-    // Check if the user has already liked the thread
-    const likedThread = await Thread.findById(threadId).populate(
-      "likedBy",
-      "_id"
-    );
+    console.log("Thread ID:", threadId);
 
-    if (!likedThread) {
+    // Remove surrounding quotes from threadId
+    const cleanThreadId = threadId.replace(/"/g, ""); // Remove all double quotes from the threadId
+
+    // Validate threadId
+    if (!Types.ObjectId.isValid(cleanThreadId)) {
+      throw new Error("Invalid threadId");
+    }
+
+    // Validate currentUserId
+    if (!Types.ObjectId.isValid(currentUserId)) {
+      throw new Error("Invalid currentUserId");
+    }
+
+    const objectId = new Types.ObjectId(cleanThreadId); // Convert threadId string to ObjectId
+
+    const thread = await Thread.findById(objectId); // Use the converted ObjectId
+
+    if (!thread) {
       throw new Error("Thread not found");
     }
 
-    const userLiked = likedThread.likedBy.some(
-      (likedUser: any) => likedUser._id.toString() === userId
-    );
-
-    if (userLiked) {
-      // If the user has already liked the thread, unlike it
-      await Thread.updateOne(
-        { _id: threadId },
-        { $pull: { likedBy: userId }, $inc: { threadLike: -1 } }
-      );
+    if (thread.likedBy.includes(currentUserId)) {
+      await Thread.findByIdAndUpdate(objectId, {
+        $pull: { likedBy: currentUserId },
+        $inc: { threadLike: -1 },
+      });
     } else {
-      // If the user has not liked the thread, like it
-      await Thread.updateOne(
-        { _id: threadId },
-        { $addToSet: { likedBy: userId }, $inc: { threadLike: 1 } },
-        { upsert: true }
-      );
+      await Thread.findByIdAndUpdate(objectId, {
+        $push: { likedBy: currentUserId },
+        $inc: { threadLike: 1 },
+      });
     }
 
     console.log("Thread like toggled successfully");
-    // Revalidate path after updating the thread
-    revalidatePath(path); // Assuming revalidatePath is defined elsewhere
-  } catch (error) {
-    console.error("Error toggling thread like:", error);
-    // Throw specific error for failure to toggle thread like
-    throw new Error("Failed to toggle thread like");
+    // Revalidate path if necessary
+    // revalidatePath(path);
+  } catch (error: any) {
+    throw new Error(`Failed to toggle thread like: ${error.message}`);
   }
 }
