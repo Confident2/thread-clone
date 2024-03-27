@@ -1,10 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
 //import { useState } from "react";
-
+import LikeButton from "../shared/LikeButton";
 import { formatDateString } from "@/lib/utils";
 import DeleteThread from "../forms/DeleteThread";
-import LikeButton from "../shared/LikeButton";
 
 interface Props {
   id: string;
@@ -28,11 +27,10 @@ interface Props {
     };
   }[];
   isComment?: boolean;
-  // likeCurrentUser: string
-  //  toggleThreadLike: (threadId: string, userId: string, path: string) => void;
+  threadId: string;
 }
 
-function ThreadCard({
+async function ThreadCard({
   id,
   currentUserId,
   parentId,
@@ -42,6 +40,7 @@ function ThreadCard({
   createdAt,
   comments,
   isComment,
+  threadId,
 }: Props) {
   return (
     <article
@@ -77,11 +76,7 @@ function ThreadCard({
               className={`${isComment && "mb-10 "} mt-5 flex flex-col gap-3`}
             >
               <div className="flex gap-3.5">
-                <LikeButton
-                  threadId={JSON.stringify(id)}
-                  currentUserId={currentUserId}
-                  path="/"
-                />
+                <LikeButton threadId={threadId} UserId={currentUserId} />
 
                 {/* <span className="text-subtle-medium text-gray-1">{likes}</span> */}
                 <Link href={`/thread/${id}`}>

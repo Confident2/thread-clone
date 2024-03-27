@@ -1,28 +1,27 @@
 "use client";
 
-import { useState } from "react";
-import { toggleThreadLike } from "@/lib/actions/thread.actions";
-import { usePathname } from "next/navigation";
+import { toggleLikeThread } from "@/lib/actions/thread.actions";
+import React, { useState } from "react";
 
 interface Props {
   threadId: string;
-  currentUserId: string;
-  path: string;
+  userId: string;
 }
 
-const LikeButton: React.FC<Props> = ({ threadId, currentUserId, path }) => {
-  const [liked, setLiked] = useState(false);
-  const pathname = usePathname();
+const LikeButton: React.FC<Props> = ({ threadId, userId }: Props) => {
+  const [liked, setLiked] = useState<boolean>(false);
 
   const handleLikeClick = async () => {
     try {
-      // Toggle the liked state locally
+      setLiked((prevLiked) => !prevLiked);
+      await toggleLikeThread(threadId, userId);
+
+      console.log("Thread like status toggled successfully");
+    } catch (error) {
+      // Reset the liked state if an error occurs
       setLiked((prevLiked) => !prevLiked);
 
-      // Call the toggleThreadLike function with the updated liked state
-      await toggleThreadLike(threadId, currentUserId, pathname);
-    } catch (error) {
-      console.error("Error toggling thread like:", error);
+      console.error("Error toggling thread like status:", error);
     }
   };
 
@@ -31,7 +30,7 @@ const LikeButton: React.FC<Props> = ({ threadId, currentUserId, path }) => {
       {liked ? (
         <img
           src="/assets/heart-filled.svg"
-          alt="heart"
+          alt="heart-filled"
           width={24}
           height={24}
           className="cursor-pointer object-contain"
@@ -39,7 +38,7 @@ const LikeButton: React.FC<Props> = ({ threadId, currentUserId, path }) => {
       ) : (
         <img
           src="/assets/heart-gray.svg"
-          alt="heart"
+          alt="heart-gray"
           width={24}
           height={24}
           className="cursor-pointer object-contain"

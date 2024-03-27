@@ -215,7 +215,7 @@ export async function addCommentToThread(
   try {
     // Find the original thread by its ID
     const originalThread = await Thread.findById(threadId);
-
+    console.log(originalThread);
     if (!originalThread) {
       throw new Error("Thread not found");
     }
@@ -243,51 +243,33 @@ export async function addCommentToThread(
   }
 }
 
-export async function toggleThreadLike(
+export async function toggleLikeThread(
   threadId: string,
-  currentUserId: string,
-  path: string
+  userId: string
 ): Promise<void> {
   try {
-    console.log("Thread ID:", threadId);
-
-    // Remove surrounding quotes from threadId
-    const cleanThreadId = threadId.replace(/"/g, ""); // Remove all double quotes from the threadId
-
-    // Validate threadId
-    if (!Types.ObjectId.isValid(cleanThreadId)) {
-      throw new Error("Invalid threadId");
-    }
-
-    // Validate currentUserId
-    if (!Types.ObjectId.isValid(currentUserId)) {
-      throw new Error("Invalid currentUserId");
-    }
-
-    const objectId = new Types.ObjectId(cleanThreadId); // Convert threadId string to ObjectId
-
-    const thread = await Thread.findById(objectId); // Use the converted ObjectId
-
+    // Check if the thread exists
+    const thread = await Thread.findById(threadId);
     if (!thread) {
       throw new Error("Thread not found");
     }
 
-    if (thread.likedBy.includes(currentUserId)) {
-      await Thread.findByIdAndUpdate(objectId, {
-        $pull: { likedBy: currentUserId },
-        $inc: { threadLike: -1 },
-      });
+    // Toggle the like status based on whether the user has already liked the thread
+    const userIndex = thread.likedBy.indexOf(userId);
+    if (userIndex === -1) {
+      // If the user hasn't liked the thread, add their like
+      thread.likedBy.push(userId);
+      thread.threadLike += 1;
     } else {
-      await Thread.findByIdAndUpdate(objectId, {
-        $push: { likedBy: currentUserId },
-        $inc: { threadLike: 1 },
-      });
+      // If the user has already liked the thread, remove their like
+      thread.likedBy.splice(userIndex, 1);
+      thread.threadLike -= 1;
     }
 
-    console.log("Thread like toggled successfully");
-    // Revalidate path if necessary
-    // revalidatePath(path);
+    // Save the updated thread document
+    await thread.save();
   } catch (error: any) {
-    throw new Error(`Failed to toggle thread like: ${error.message}`);
+    // Handle errors gracefully
+    throw new Error(`Failed to toggle like for thread: ${error.message}`);
   }
 }

@@ -28,10 +28,14 @@ const threadSchema = new mongoose.Schema({
       ref: "Thread",
     },
   ],
-  likedBy: {
-    type: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
-    default: [],
-  },
+  likedBy: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: [],
+    },
+  ],
+
   threadLike: {
     type: Number,
     default: 0,
