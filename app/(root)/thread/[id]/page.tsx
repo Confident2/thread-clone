@@ -24,7 +24,7 @@ async function page({ params }: { params: { id: string } }) {
     <section className="relative">
       <div>
         <ThreadCard
-          id={JSON.stringify(thread._id)}
+          id={thread._id}
           currentUserId={user.id}
           parentId={thread.parentId}
           content={thread.text}
@@ -32,6 +32,8 @@ async function page({ params }: { params: { id: string } }) {
           community={thread.community}
           createdAt={thread.createdAt}
           comments={thread.children}
+          userId={JSON.stringify(userInfo._id)}
+          //  threadId={thread.threadId}
         />
       </div>
 
@@ -55,6 +57,8 @@ async function page({ params }: { params: { id: string } }) {
             community={childItem.community}
             createdAt={childItem.createdAt}
             comments={childItem.children}
+            userId={JSON.stringify(userInfo._id)}
+            // threadId={childItem.threadId}
             isComment
           />
         ))}

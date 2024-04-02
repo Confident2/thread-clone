@@ -27,7 +27,8 @@ interface Props {
     };
   }[];
   isComment?: boolean;
-  threadId: string;
+  threadId?: string;
+  userId: string;
 }
 
 async function ThreadCard({
@@ -40,7 +41,7 @@ async function ThreadCard({
   createdAt,
   comments,
   isComment,
-  threadId,
+  userId,
 }: Props) {
   return (
     <article
@@ -76,7 +77,7 @@ async function ThreadCard({
               className={`${isComment && "mb-10 "} mt-5 flex flex-col gap-3`}
             >
               <div className="flex gap-3.5">
-                <LikeButton threadId={threadId} UserId={currentUserId} />
+                <LikeButton threadId={JSON.stringify(id)} userId={userId} />
 
                 {/* <span className="text-subtle-medium text-gray-1">{likes}</span> */}
                 <Link href={`/thread/${id}`}>

@@ -245,8 +245,11 @@ export async function addCommentToThread(
 
 export async function toggleLikeThread(
   threadId: string,
-  userId: string
+  userId: string,
+  path: string,
+  newLikedState: boolean
 ): Promise<void> {
+  connectToDB();
   try {
     // Check if the thread exists
     const thread = await Thread.findById(threadId);
@@ -254,22 +257,83 @@ export async function toggleLikeThread(
       throw new Error("Thread not found");
     }
 
-    // Toggle the like status based on whether the user has already liked the thread
+    // Check if the user has already liked the thread
     const userIndex = thread.likedBy.indexOf(userId);
-    if (userIndex === -1) {
-      // If the user hasn't liked the thread, add their like
-      thread.likedBy.push(userId);
-      thread.threadLike += 1;
-    } else {
-      // If the user has already liked the thread, remove their like
+    const alreadyLiked = userIndex !== -1;
+
+    if (alreadyLiked && !newLikedState) {
+      // If the user has already liked the thread and is unliking it
       thread.likedBy.splice(userIndex, 1);
       thread.threadLike -= 1;
+    } else if (!alreadyLiked && newLikedState) {
+      // If the user hasn't liked the thread and is liking it
+      thread.likedBy.push(userId);
+      thread.threadLike += 1;
     }
 
     // Save the updated thread document
     await thread.save();
+
+    revalidatePath(path);
   } catch (error: any) {
     // Handle errors gracefully
     throw new Error(`Failed to toggle like for thread: ${error.message}`);
   }
 }
+
+export async function getLikesCountForThread(
+  threadId: string
+): Promise<number> {
+  try {
+    connectToDB(); // Assuming this function connects to the database
+
+    // Check if the thread exists
+    const thread = await Thread.findById(threadId);
+    if (!thread) {
+      throw new Error("Thread not found");
+    }
+
+    // Return the likes count for the thread
+    return thread.threadLike;
+  } catch (error: any) {
+    // Handle errors gracefully
+    console.error(`Failed to fetch likes count for thread: ${error.message}`);
+    throw new Error(`Failed to fetch likes count for thread: ${error.message}`);
+  }
+}
+
+export async function checkIfUserLikedThread(
+  threadId: string,
+  userId: string
+): Promise<boolean> {
+  try {
+    // Ensure database connection
+    connectToDB();
+
+    // Find the thread by its ID and check if the likedBy array contains the user's ID
+    const thread = await Thread.findOne({ _id: threadId, likedBy: userId });
+
+    // If the thread exists and the user's ID is in the likedBy array, return true
+    return !!thread;
+  } catch (error: any) {
+    console.error("Error checking if user liked thread:", error);
+    return false; // Return false in case of any error
+  }
+}
+
+// export async function getThread(threadId: string) {
+//   try {
+//     connectToDB();
+//     // Query the database to find the thread by its ID
+//     const thread = await Thread.findById(threadId)
+//       .populate("author")
+//       .populate("community")
+//       .populate("children");
+
+//     return thread; // Return the thread document
+//   } catch (error) {
+//     // Handle errors gracefully
+//     console.error("Error fetching thread:", error);
+//     throw new Error("Failed to fetch thread");
+//   }
+// }

@@ -41,7 +41,8 @@ async function Home({
                 community={post.community}
                 createdAt={post.createdAt}
                 comments={post.children}
-                threadId={post.threadId}
+                userId={JSON.stringify(userInfo._id)}
+                //threadId={post.id}
               />
             ))}
           </>
