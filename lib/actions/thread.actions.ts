@@ -320,20 +320,3 @@ export async function checkIfUserLikedThread(
     return false; // Return false in case of any error
   }
 }
-
-// export async function getThread(threadId: string) {
-//   try {
-//     connectToDB();
-//     // Query the database to find the thread by its ID
-//     const thread = await Thread.findById(threadId)
-//       .populate("author")
-//       .populate("community")
-//       .populate("children");
-
-//     return thread; // Return the thread document
-//   } catch (error) {
-//     // Handle errors gracefully
-//     console.error("Error fetching thread:", error);
-//     throw new Error("Failed to fetch thread");
-//   }
-// }

@@ -58,7 +58,6 @@ async function page({ params }: { params: { id: string } }) {
             createdAt={childItem.createdAt}
             comments={childItem.children}
             userId={JSON.stringify(userInfo._id)}
-            // threadId={childItem.threadId}
             isComment
           />
         ))}
